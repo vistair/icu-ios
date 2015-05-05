@@ -1,23 +1,17 @@
-DEVELOPER=/Applications/Xcode.app/Contents/Developer
-DEVROOT=$DEVELOPER/Platforms/iPhoneSimulator.platform/Developer
-SDKROOT=$DEVROOT/SDKs/iPhoneSimulator6.1.sdk
-SYSROOT=$SDKROOT
+DEVELOPER="$(xcode-select --print-path)"
+SDKROOT="$(xcodebuild -version -sdk iphonesimulator | grep -E '^Path' | sed 's/Path: //')"
+ARCH="i386"
 
 ICU_PATH="$(pwd)/icu"
 ICU_FLAGS="-I$ICU_PATH/source/common/ -I$ICU_PATH/source/tools/tzcode/ "
 
-export CXXPP=
-export CXXPPFLAGS=
-export CPPFLAGS="-I$SDKROOT/usr/include/ -I./include/ -miphoneos-version-min=2.2 $ICU_FLAGS"
-
-export CFLAGS="-arch i386 $CPPFLAGS -pipe -no-cpp-precomp -isysroot $SDKROOT"
-export CPP=
-export CXXFLAGS="$CFLAGS"
+export CXX="$DEVELOPER/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++"
 export CC="$DEVELOPER/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang"
-export CXX="$DEVELOPER/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang"
-export LDFLAGS="-L$SDKROOT/usr/lib/ -isysroot $SDKROOT -Wl,-dead_strip -miphoneos-version-min=2.0 -lstdc++"
+export CFLAGS="-isysroot $SDKROOT -I$SDKROOT/usr/include/ -I./include/ -arch $ARCH -miphoneos-version-min=7.0 $ICU_FLAGS"
+export CXXFLAGS="-stdlib=libc++ -std=c++11 -isysroot $SDKROOT -I$SDKROOT/usr/include/ -I./include/ -arch $ARCH -miphoneos-version-min=7.0 $ICU_FLAGS"
+export LDFLAGS="-stdlib=libc++ -L$SDKROOT/usr/lib/ -isysroot $SDKROOT -Wl,-dead_strip -miphoneos-version-min=7.0 -lstdc++"
 
-mkdir -p build-i386 && cd build-i386
+mkdir -p build-$ARCH && cd build-$ARCH
 
 [ -e Makefile ] && make distclean
 
